@@ -1,0 +1,23 @@
+# ignore all the backup files created by editors
+*~
+*.so
+*.o
+
+# things to ignore in directory greedyr/src
+src/Makevars
+extdata/
+src/*.o
+src/*.so
+src/symbols.rds
+
+src/greedy/
+src/greedybuild/
+inst/doc
+vignettes/*pdf
+vignettes/*html
+
+.Rhistory
+R/.Rhistory
+
+.DS_Store
+.Rproj.user
