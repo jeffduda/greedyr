@@ -1,0 +1,15 @@
+Package: greedyr
+Type: Package
+Title: What the Package Does Using Title Case
+Version: 1.0
+Date: 2016-12-21
+Author: Jeffrey T. Duda
+Maintainer: Brian B. Avants <stnava@gmail.com>
+Description: More details about what the package does. See
+        <http://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file>
+        for details on how to write this part.
+License: Apache License 2.0
+Depends: Rcpp, ANTsR
+Imports: Rcpp, ANTsR
+LinkingTo: Rcpp, ANTsR
+RoxygenNote: 5.0.1
