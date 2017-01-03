@@ -12,7 +12,7 @@ try
 
   typedef itk::Image<float, 2> ImageType;
 
-  typename ImageType::Pointer img = ImageType::New();
+  ImageType::Pointer img = ImageType::New();
 
   return Rcpp::wrap(1);
 
@@ -87,18 +87,18 @@ RcppExport SEXP makeImage4(  )
 try
 {
   typedef itk::Image<float,2>               ImageType;
-  typedef typename ImageType::Pointer       ImagePointerType;
+  typedef ImageType::Pointer       ImagePointerType;
 
-  typename ImageType::RegionType region;
+  ImageType::RegionType region;
 
   for ( unsigned int i=0; i<2; i++)
     {
     region.SetSize(i, 64);
     }
 
-  typename ImageType::SpacingType   itk_spacing;
-  typename ImageType::PointType     itk_origin;
-  typename ImageType::DirectionType itk_direction;
+  ImageType::SpacingType   itk_spacing;
+  ImageType::PointType     itk_origin;
+  ImageType::DirectionType itk_direction;
 
   for ( unsigned int i=0; i<ImageType::ImageDimension; i++)
     {
