@@ -66,10 +66,10 @@ echo "libgreedy=\`find \${mygreedylib} -name \"lib*.a\"\`" >> Makevars
 #                 \${libants} \${libitk} \${libants} \${itklib}  \${libants} \
 #                 \${libitk} \${libants} \${itklib}   \${libants} \${itklib} \
 #                 \${libants} \${libitk} \${libants} \${itklib}" >> Makevars
-echo "PKG_LIBS = \${libitk}  \${libitk} \${libitk} \
-                 \${libitk}  \${itklib}  \
-                 \${libitk}  \${itklib}   \${itklib} \
-                 \${libitk} \${itklib} \${libgreedy}" >> Makevars
+echo "PKG_LIBS = \${libitk}  \${libgreedy} \${libitk} \${libgreedy} \${libitk} \
+                 \${libitk}  \${libgreedy} \${itklib} \${libgreedy} \
+                 \${libitk}  \${libgreedy} \${itklib} \${libgreedy}  \${itklib} \
+                 \${libitk} \${libgreedy} \${itklib} \${libgreedy} " >> Makevars
 
 echo ".PHONY: all libs" >> Makevars
 
