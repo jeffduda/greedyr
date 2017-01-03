@@ -83,7 +83,7 @@ try
   if ( fixed_pixeltype == std::string( "double" ) ) {
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<double,2> ImageType;
-      typedef typename ImageType::Pointer ImagePointerType;
+      typedef ImageType::Pointer ImagePointerType;
 
       return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r) ) );
     }
@@ -101,7 +101,7 @@ try
   else if ( fixed_pixeltype == std::string( "float" ) ) {
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<float,2> ImageType;
-      typedef typename ImageType::Pointer ImagePointerType;
+      typedef ImageType::Pointer ImagePointerType;
 
       return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r) ) );
     }
