@@ -86,7 +86,7 @@ echo "libs: ; cd \${PWD}/greedybuild && \$(MAKE) -j 2" >> Makevars
 # get ANTsR code
 antsrgit=https://github.com/stnava/ANTsR.git
 antsrtag=d338520614975afc78b501bb5905c9ef7027012b
-if [[ ! -s RcppANTsR.h  ]] ; then
+if [[ ! -s RcppANTsR_Transform.h  ]] ; then
   git clone $antsrgit ANTsR_test
 
   cd ANTsR_test
@@ -98,6 +98,8 @@ if [[ ! -s RcppANTsR.h  ]] ; then
 
   cp ANTsR_test/src/RcppANTsR.h .
   cp ANTsR_test/src/RcppANTsR.cpp .
+  cp ANTsR_test/src/RcppANTsR_Transform.h .
+  cp ANTsR_test/src/RcppANTsR_Transform.cpp .
   rm -r ANTsR_test
 fi
 

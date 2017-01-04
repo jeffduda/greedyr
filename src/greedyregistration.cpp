@@ -4,15 +4,15 @@
 #include <RcppANTsR.h>
 #include "itkImage.h"
 #include "itkVectorImage.h"
-#include "GreedyAPI.h"
+#include "GreedyrAPI.h"
 #include "GreedyParameters.h"
 
 template< class ImageType >
 //typename ImageType::Pointer
-unsigned int
+typename itk::Transform<double, ImageType::ImageDimension, ImageType::ImageDimension>::Pointer
 greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Pointer moving )
 {
-  Rcpp::Rcout << "Setup the GreedyApproach" << std::endl;
+  //Rcpp::Rcout << "Setup the GreedyrApproach" << std::endl;
 
   GreedyParameters params;
 
@@ -31,9 +31,21 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
   typedef typename ImageType::InternalPixelType PixelType;
   const unsigned int Dimension = ImageType::ImageDimension;
 
-  GreedyApproach<Dimension, PixelType> greedyapi;
+  typedef GreedyrApproach<Dimension, PixelType> GreedyType;
+  GreedyType greedyrapi;
 
-  Rcpp::Rcout << "Set input names" << std::endl;
+  typedef typename GreedyType::LinearTransformType TransformType;
+  typedef itk::MatrixOffsetTransformBase<double, ImageType::ImageDimension, ImageType::ImageDimension> CachedTransformType;
+
+  //typedef typename itk::Matri
+  typename CachedTransformType::Pointer affineTransform = CachedTransformType::New();
+  std::string affineName("AFFINE-0");
+  greedyrapi.AddCachedInputObject(affineName, affineTransform);
+  TransformSpec transformSpec;
+  transformSpec.filename = affineName;
+  transformSpec.exponent = 1.0;
+
+  //Rcpp::Rcout << "Set input names" << std::endl;
 
   std::string fixedName("FIXED-0");
   std::string movingName("MOVING-0");
@@ -44,20 +56,24 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
   ip.moving = movingName;
   params.inputs.push_back(ip);
 
-  params.output = "greedy.mat";
+  params.output = affineName.c_str();
 
-  Rcpp::Rcout << "Set input pointers" << std::endl;
+  //Rcpp::Rcout << "Set input pointers" << std::endl;
 
-  greedyapi.AddCachedInputObject(fixedName, fixed);
-  greedyapi.AddCachedInputObject(movingName, moving);
+  greedyrapi.AddCachedInputObject(fixedName, fixed);
+  greedyrapi.AddCachedInputObject(movingName, moving);
 
-  Rcpp::Rcout << "Run()" << std::endl;
-  greedyapi.Run(params);
-  Rcpp::Rcout << "Done" << std::endl;
+  //Rcpp::Rcout << "Run()" << std::endl;
+  int flag = greedyrapi.Run(params);
+  //Rcpp::Rcout << "Done" << std::endl;
 
+  //CachedTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
+  typename GreedyType::BaseTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
+  //std::cout << mat << std::endl;
+  //std::cout << "return and wrap" << std::endl;
+  //Rcpp::Rcout << mat << std::endl;
 
-
-  return 0;
+  return mat;
 }
 
 RcppExport SEXP greedyregistration( SEXP fixed_r, SEXP moving_r )
@@ -81,6 +97,8 @@ try
   }
 
   if ( fixed_pixeltype == std::string( "double" ) ) {
+    //Rcpp::Rcout << "Running as double precision" << std::endl;
+
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<double,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
@@ -99,6 +117,8 @@ try
 
   }
   else if ( fixed_pixeltype == std::string( "float" ) ) {
+    //Rcpp::Rcout << "Running as float precision" << std::endl;
+
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<float,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
