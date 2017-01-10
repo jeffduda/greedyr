@@ -45,9 +45,9 @@ else # just try gcc directly
 fi
 echo $OSTYPE $needVCL_CAN_STATIC_CONST_INIT_FLOAT
 if [[ ${needVCL_CAN_STATIC_CONST_INIT_FLOAT} -eq 1 ]]; then
-echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY} -I/Users/jtduda/pkg/ANTsR/src " >> Makevars
+echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY}" >> Makevars
 else
-echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY} -I/Users/jtduda/pkg/ANTsR/src " >> Makevars
+echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY}" >> Makevars
 fi
 
 echo "CXX_STD = CXX11" >> Makevars
@@ -55,7 +55,6 @@ echo "CXX_STD = CXX11" >> Makevars
 #echo "myantslib=\${PWD}/antb/lib/" >> Makevars
 
 #echo "libants=\`find \${myantslib} -name \"lib*.a\"\`" >> Makevars
-
 echo "libitk=\`find \\\`\$(R_HOME)/bin/Rscript -e 'ITKR:::itkLibs()'\\\` -name \"lib*.a\"\` " >> Makevars
 
 echo "mygreedylib=\${PWD}/greedybuild/" >> Makevars
@@ -84,24 +83,24 @@ echo "libs: ; cd \${PWD}/greedybuild && \$(MAKE) -j 2" >> Makevars
 #  cat Makevars.in >> Makevars
 
 # get ANTsR code
-antsrgit=https://github.com/stnava/ANTsR.git
-antsrtag=d338520614975afc78b501bb5905c9ef7027012b
-if [[ ! -s RcppANTsR_Transform.h  ]] ; then
-  git clone $antsrgit ANTsR_test
-
-  cd ANTsR_test
-  if [[ -d .git ]]; then
-      git checkout master;  git pull;  git checkout $antsrtag
-  fi
-
-  cd ../
-
-  cp ANTsR_test/src/RcppANTsR.h .
-  cp ANTsR_test/src/RcppANTsR.cpp .
-  cp ANTsR_test/src/RcppANTsR_Transform.h .
-  cp ANTsR_test/src/RcppANTsR_Transform.cpp .
-  rm -r ANTsR_test
-fi
+#antsrgit=https://github.com/stnava/ANTsR.git
+#antsrtag=d338520614975afc78b501bb5905c9ef7027012b
+#if [[ ! -s RcppANTsR_Transform.h  ]] ; then
+#  git clone $antsrgit ANTsR_test
+#
+#  cd ANTsR_test
+#  if [[ -d .git ]]; then
+#      git checkout master;  git pull;  git checkout $antsrtag
+#  fi
+#
+#  cd ../
+#
+#  cp ANTsR_test/src/RcppANTsR.h .
+#  cp ANTsR_test/src/RcppANTsR.cpp .
+#  cp ANTsR_test/src/RcppANTsR_Transform.h .
+#  cp ANTsR_test/src/RcppANTsR_Transform.cpp .
+#  rm -r ANTsR_test
+#fi
 
 greedygit=https://github.com/pyushkevich/greedy.git
 greedytag=2887f29d261396a58913620799b6a0c61e9f1ba9
@@ -123,18 +122,3 @@ if [[ ! -d greedy ]] ; then
       -DCMAKE_BUILD_TYPE:STRING="${CMAKE_BUILD_TYPE}"  ../greedy
   cd ../
 fi
-
-#if [[ ! -s antb ]] ; then
-#  mkdir antb
-#fi
-#cd ./antb
-#${cmaker} -DITK_DIR:PATH=${ITKDIR} \
-#    -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} ${compflags} -DNDEBUG  "\
-#    -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${compflags} -DNDEBUG  "\
-#    -DBUILD_SHARED_LIBS=OFF \
-#    -DBUILD_ALL_ANTS_APPS=OFF \
-#    -DUSE_SYSTEM_ITK=OFF \
-#    -DBUILD_TESTING=OFF \
-#    -DCOPY_SCRIPT_FILES_TO_BIN_DIR=OFF \
-#    -DCMAKE_BUILD_TYPE:STRING="${CMAKE_BUILD_TYPE}"  ../ants
-#cd ../
