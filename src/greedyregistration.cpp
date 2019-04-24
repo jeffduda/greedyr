@@ -9,7 +9,8 @@
 
 template< class ImageType >
 //typename ImageType::Pointer
-typename itk::Transform<double, ImageType::ImageDimension, ImageType::ImageDimension>::Pointer
+//typename itk::Transform<double, ImageType::ImageDimension, ImageType::ImageDimension>::Pointer
+SEXP
 greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Pointer moving, GreedyParameters params )
 {
   Rcpp::Rcout << "Setup the GreedyrApproach" << std::endl;
@@ -21,13 +22,22 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
 
   GreedyType greedyrapi;
 
-  CachedTransformPointerType affineTransform = CachedTransformType::New();
-  std::string affineName("AFFINE-0");
-  greedyrapi.AddCachedInputObject(affineName, affineTransform);
-
   TransformSpec transformSpec;
-  transformSpec.filename = affineName;
-  transformSpec.exponent = 1.0;
+  CachedTransformPointerType affineTransform = CachedTransformType::New();
+  
+  if ( params.mode == GreedyParameters::Mode::AFFINE ) {
+
+    std::string affineName("AFFINE-0");
+    greedyrapi.AddCachedInputObject(affineName, affineTransform);
+
+    transformSpec.filename = affineName;
+    transformSpec.exponent = 1.0;
+
+    params.output = affineName.c_str();
+  }
+  if ( params.mode == GreedyParameters::Mode::GREEDY ) {
+    // can cache the warp?
+  }
 
   Rcpp::Rcout << "Set input names" << std::endl;
 
@@ -39,8 +49,6 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
   ip.fixed = fixedName;
   ip.moving = movingName;
   params.inputs.push_back(ip);
-
-  params.output = affineName.c_str();
 
   Rcpp::Rcout << "Set input pointers" << std::endl;
 
@@ -55,15 +63,24 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
   Rcpp::Rcout << "Done" << std::endl;
 
   //CachedTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
-  typename GreedyType::BaseTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
+
   //std::cout << mat << std::endl;
   //std::cout << "return and wrap" << std::endl;
   //Rcpp::Rcout << mat << std::endl;
 
-  return mat;
+  if ( params.mode == GreedyParameters::Mode::AFFINE ) {
+    typename GreedyType::BaseTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
+    return(Rcpp::wrap(mat));
+  }
+  if ( params.mode == GreedyParameters::Mode::GREEDY ) {
+    return( Rcpp::wrap(params.output) );
+  }
+
+  // never reached
+  return Rcpp::wrap(1);
 }
 
-RcppExport SEXP greedyregistration( SEXP fixed_r, SEXP moving_r, SEXP metric_r )
+RcppExport SEXP greedyregistration( SEXP fixed_r, SEXP moving_r, SEXP metric_r, SEXP mode_r, SEXP ofile_r )
 {
 try
 {
@@ -77,6 +94,8 @@ try
   unsigned int moving_dimension = Rcpp::as< unsigned int >( fixed_image.slot( "dimension" ) ) ;
 
   std::string metric = Rcpp::as<std::string>( metric_r );
+  std::string mode = Rcpp::as<std::string>( mode_r );
+  std::string ofile = Rcpp::as<std::string>( ofile_r );
 
 
   if ( fixed_pixeltype != moving_pixeltype ) {
@@ -108,7 +127,16 @@ try
     Rcpp::stop("Invalid metric: " + metric);
   }
 
-  params.mode = GreedyParameters::Mode::AFFINE;
+  if ( mode == "GREEDY" ) {
+    params.mode = GreedyParameters::Mode::GREEDY;
+    params.output = ofile;
+  }
+  else if ( mode == "AFFINE") {
+    params.mode = GreedyParameters::Mode::AFFINE;
+  }
+  else {
+    Rcpp::stop("Unsupported mode");
+  }
 
   std::vector<int> metric_radius = {2, 2};
   params.metric_radius = metric_radius;
@@ -125,7 +153,7 @@ try
       typedef itk::VectorImage<double,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
       params.dim = 2;
-      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params) );
+      return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
     }
     else if ( fixed_dimension == 3 ) {
       params.dim = 3;
@@ -145,7 +173,7 @@ try
       typedef itk::VectorImage<float,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
       params.dim = 2;
-      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params) );
+      return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
     }
     else if ( fixed_dimension == 3 ) {
       params.dim = 3;

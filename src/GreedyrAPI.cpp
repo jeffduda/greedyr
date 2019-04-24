@@ -52,7 +52,7 @@
 template <unsigned int VDim, typename TReal>
 typename GreedyrApproach<VDim, TReal>::BaseTransformPointer
 GreedyrApproach<VDim, TReal>
-::GetAffineMatrixViaCache(const TransformSpec &ts)
+::GetAffineMatrixViaCache(const TransformSpec &ts )
 {
 
   // Physical (RAS) space transform matrix
@@ -60,8 +60,8 @@ GreedyrApproach<VDim, TReal>
 
   // An ITK-style transform - forced to floating point here
   //typedef itk::MatrixOffsetTransformBase<double, VDim, VDim> CachedTransformType;
-
   typename CachedTransformType::Pointer itk_tran;
+  //typename LinearTransformType::Pointer itk_tran;
 
   // See if a transform is already stored in the cache
   typename ImageCache::const_iterator itCache = this->m_ImageCache.find(ts.filename);
@@ -80,8 +80,38 @@ GreedyrApproach<VDim, TReal>
     throw GreedyException("Unable to find transform %s", ts.filename.c_str());
     }
 
+  /*
+  for (unsigned int i=0; i<VDim; i++ )
+    {
+    Qp(i,VDim) = itk_tran->GetOffset(i);
+    for (unsigned int j=0; j<VDim; j++ )
+      {
+      Qp(i,j) = itk_tran->GetMatrix()(i,j);
+      }
+    }
+
+  this->MapPhysicalRASSpaceToAffine(helper, level, Qp, itk_tran);
+  */
+  typedef typename CachedTransformType::MatrixType MatrixType;
+  typedef typename CachedTransformType::OffsetType OffsetType;
+  MatrixType mat = itk_tran->GetMatrix();
+  OffsetType offset = itk_tran->GetOffset();
+
+  if ( VDim == 2 ) {
+    offset[0] *= -1;
+    offset[1] *= -1;
+  }
+  else if( VDim == 3 )
+    {
+    mat(2,0) *= -1; mat(2,1) *= -1;
+    mat(0,2) *= -1; mat(1,2) *= -1;
+    mat(0,3) *= -1; mat(1,3) *= -1;
+    }
+  itk_tran->SetMatrix(mat);
+  itk_tran->SetOffset(offset);
 
   typename BaseTransformType::Pointer return_trans = dynamic_cast<BaseTransformType *>( itk_tran.GetPointer() );
+
   if (ts.exponent == -1.0)
     {
     return_trans = itk_tran->GetInverseTransform();

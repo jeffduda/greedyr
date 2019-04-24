@@ -44,6 +44,7 @@ public:
   typedef GreedyApproach<VDim, TReal>  SuperClass;
 
   typedef typename SuperClass::LinearTransformType LinearTransformType;
+  typedef typename SuperClass::OFHelperType OFHelperType;
 
   typedef itk::MatrixOffsetTransformBase<double, VDim, VDim> CachedTransformType;
   typedef typename CachedTransformType::Pointer CachedTransformPointer;

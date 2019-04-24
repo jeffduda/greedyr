@@ -12,10 +12,12 @@
 #' @export antsrext_test1()
 
 
-greedyregistration <- function( fixed, moving, metric="SSD" ) {
+greedyregistration <- function( fixed, moving, metric="SSD", mode="GREEDY" ) {
 
   fixedImg = fixed
   movingImg = moving
+
+  ofile = paste0( tempfile(), ".nii.gz" )
 
   if ( !fixed@isVector) {
     fixedImg = mergeChannels(list(fixed))
@@ -25,6 +27,12 @@ greedyregistration <- function( fixed, moving, metric="SSD" ) {
     movingImg = mergeChannels(list(moving))
   }
 
-  results = .Call("greedyregistration", fixedImg, movingImg, metric, PACKAGE="greedyr")
+  results = .Call("greedyregistration", fixedImg, movingImg, metric, mode, ofile, PACKAGE="greedyr")
+
+  if ( class(results)=="character" ) {
+    results = antsrTransformFromDisplacementField( antsImageRead(results) )
+  }
+
+
   return(results)
 }
