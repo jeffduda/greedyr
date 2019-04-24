@@ -45,9 +45,9 @@ else # just try gcc directly
 fi
 echo $OSTYPE $needVCL_CAN_STATIC_CONST_INIT_FLOAT
 if [[ ${needVCL_CAN_STATIC_CONST_INIT_FLOAT} -eq 1 ]]; then
-echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY}" >> Makevars
+echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY} -I\${GREEDY}/ITKFilters/include" >> Makevars
 else
-echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY}" >> Makevars
+echo "PKG_CPPFLAGS = -I\${ITK} -I\${PWD} -I\${GREEDY} -I\${GREEDY}/ITKFilters/include" >> Makevars
 fi
 
 echo "CXX_STD = CXX11" >> Makevars
@@ -61,10 +61,6 @@ echo "mygreedylib=\${PWD}/greedybuild/" >> Makevars
 echo "libgreedy=\`find \${mygreedylib} -name \"lib*.a\"\`" >> Makevars
 
 
-#echo "PKG_LIBS = \${libitk}  \${libants} \${libitk} \${libants} \${libitk} \
-#                 \${libants} \${libitk} \${libants} \${itklib}  \${libants} \
-#                 \${libitk} \${libants} \${itklib}   \${libants} \${itklib} \
-#                 \${libants} \${libitk} \${libants} \${itklib}" >> Makevars
 echo "PKG_LIBS = \${libitk}  \${libgreedy} \${libitk} \${libgreedy} \${libitk} \
                  \${libitk}  \${libgreedy} \${itklib} \${libgreedy} \
                  \${libitk}  \${libgreedy} \${itklib} \${libgreedy}  \${itklib} \
@@ -80,30 +76,13 @@ echo "tlibs: ; cd \${PWD}/greedybuild" >> Makevars
 
 echo "libs: ; cd \${PWD}/greedybuild && \$(MAKE) -j 2" >> Makevars
 
-#  cat Makevars.in >> Makevars
 
-# get ANTsR code
-#antsrgit=https://github.com/stnava/ANTsR.git
-#antsrtag=d338520614975afc78b501bb5905c9ef7027012b
-#if [[ ! -s RcppANTsR_Transform.h  ]] ; then
-#  git clone $antsrgit ANTsR_test
-#
-#  cd ANTsR_test
-#  if [[ -d .git ]]; then
-#      git checkout master;  git pull;  git checkout $antsrtag
-#  fi
-#
-#  cd ../
-#
-#  cp ANTsR_test/src/RcppANTsR.h .
-#  cp ANTsR_test/src/RcppANTsR.cpp .
-#  cp ANTsR_test/src/RcppANTsR_Transform.h .
-#  cp ANTsR_test/src/RcppANTsR_Transform.cpp .
-#  rm -r ANTsR_test
-#fi
+#greedygit=https://github.com/pyushkevich/greedy.git
+#greedytag=2805d1f8d2b7047bfa8b091d9bc03bac161559fb
 
-greedygit=https://github.com/pyushkevich/greedy.git
-greedytag=2887f29d261396a58913620799b6a0c61e9f1ba9
+greedygit=https://github.com/jeffduda/greedy.git
+greedytag=14cacd07d3afcf4a5d6642de78e4142cc7a11745
+
 if [[ ! -d greedy ]] ; then
   git clone $greedygit greedy
   cd greedy
@@ -113,7 +92,7 @@ if [[ ! -d greedy ]] ; then
   cd greedybuild
   ${cmaker} -DITK_DIR:PATH=${ITKDIR} \
       -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} ${compflags} -DNDEBUG  "\
-      -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${compflags} -DNDEBUG  "\
+    -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${compflags} -DNDEBUG  "\
       -DBUILD_SHARED_LIBS=OFF \
       -DBUILD_ALL_ANTS_APPS=OFF \
       -DUSE_SYSTEM_ITK=OFF \

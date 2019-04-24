@@ -10,42 +10,26 @@
 template< class ImageType >
 //typename ImageType::Pointer
 typename itk::Transform<double, ImageType::ImageDimension, ImageType::ImageDimension>::Pointer
-greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Pointer moving )
+greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Pointer moving, GreedyParameters params )
 {
-  //Rcpp::Rcout << "Setup the GreedyrApproach" << std::endl;
+  Rcpp::Rcout << "Setup the GreedyrApproach" << std::endl;
 
-  GreedyParameters params;
+  using PixelType = typename ImageType::InternalPixelType;
+  using GreedyType = GreedyrApproach<ImageType::ImageDimension, PixelType>;
+  using CachedTransformType = itk::MatrixOffsetTransformBase<double, ImageType::ImageDimension, ImageType::ImageDimension>;
+  using CachedTransformPointerType = typename CachedTransformType::Pointer;
 
-  GreedyParameters::SetToDefaults(params);
-
-  params.dim = ImageType::ImageDimension;
-  params.metric = GreedyParameters::MetricType::NCC;
-  params.mode = GreedyParameters::Mode::AFFINE;
-
-  std::vector<int> metric_radius = {2, 2};
-  params.metric_radius = metric_radius;
-
-  std::vector<int> iter_per_level = {100,50,10};
-  params.iter_per_level = iter_per_level;
-
-  typedef typename ImageType::InternalPixelType PixelType;
-  const unsigned int Dimension = ImageType::ImageDimension;
-
-  typedef GreedyrApproach<Dimension, PixelType> GreedyType;
   GreedyType greedyrapi;
 
-  typedef typename GreedyType::LinearTransformType TransformType;
-  typedef itk::MatrixOffsetTransformBase<double, ImageType::ImageDimension, ImageType::ImageDimension> CachedTransformType;
-
-  //typedef typename itk::Matri
-  typename CachedTransformType::Pointer affineTransform = CachedTransformType::New();
+  CachedTransformPointerType affineTransform = CachedTransformType::New();
   std::string affineName("AFFINE-0");
   greedyrapi.AddCachedInputObject(affineName, affineTransform);
+
   TransformSpec transformSpec;
   transformSpec.filename = affineName;
   transformSpec.exponent = 1.0;
 
-  //Rcpp::Rcout << "Set input names" << std::endl;
+  Rcpp::Rcout << "Set input names" << std::endl;
 
   std::string fixedName("FIXED-0");
   std::string movingName("MOVING-0");
@@ -58,14 +42,17 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
 
   params.output = affineName.c_str();
 
-  //Rcpp::Rcout << "Set input pointers" << std::endl;
+  Rcpp::Rcout << "Set input pointers" << std::endl;
 
   greedyrapi.AddCachedInputObject(fixedName, fixed);
   greedyrapi.AddCachedInputObject(movingName, moving);
 
-  //Rcpp::Rcout << "Run()" << std::endl;
+  Rcpp::Rcout << "Run()" << std::endl;
   int flag = greedyrapi.Run(params);
-  //Rcpp::Rcout << "Done" << std::endl;
+  if ( flag ) {
+    Rcpp::Rcout << "WARNING: greedy API returned error code: " << flag << std::endl;
+  }
+  Rcpp::Rcout << "Done" << std::endl;
 
   //CachedTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
   typename GreedyType::BaseTransformPointer mat = greedyrapi.GetAffineMatrixViaCache(transformSpec);
@@ -76,7 +63,7 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
   return mat;
 }
 
-RcppExport SEXP greedyregistration( SEXP fixed_r, SEXP moving_r )
+RcppExport SEXP greedyregistration( SEXP fixed_r, SEXP moving_r, SEXP metric_r )
 {
 try
 {
@@ -89,6 +76,9 @@ try
   std::string moving_pixeltype = Rcpp::as< std::string >( fixed_image.slot( "pixeltype" ) ) ;
   unsigned int moving_dimension = Rcpp::as< unsigned int >( fixed_image.slot( "dimension" ) ) ;
 
+  std::string metric = Rcpp::as<std::string>( metric_r );
+
+
   if ( fixed_pixeltype != moving_pixeltype ) {
     Rcpp::stop( "Images must have same pixeltype" );
   }
@@ -96,20 +86,52 @@ try
         Rcpp::stop( "Images must have same dimension" );
   }
 
+  GreedyParameters params;
+  GreedyParameters::SetToDefaults(params);
+
+  if ( metric == "SSD" ) {
+    params.metric = GreedyParameters::MetricType::SSD;
+  }
+  else if ( metric == "MI" ) {
+    params.metric = GreedyParameters::MetricType::MI;
+  }
+  else if ( metric == "NMI") {
+    params.metric = GreedyParameters::MetricType::NMI;
+  }
+  else if ( metric == "NCC") {
+    params.metric = GreedyParameters::MetricType::NCC;
+  }
+  else if ( metric == "MAHAL") {
+    params.metric = GreedyParameters::MetricType::MAHALANOBIS;
+  }
+  else {
+    Rcpp::stop("Invalid metric: " + metric);
+  }
+
+  params.mode = GreedyParameters::Mode::AFFINE;
+
+  std::vector<int> metric_radius = {2, 2};
+  params.metric_radius = metric_radius;
+
+  std::vector<int> iter_per_level = {100,50,10};
+  params.iter_per_level = iter_per_level;
+
+
+
   if ( fixed_pixeltype == std::string( "double" ) ) {
     //Rcpp::Rcout << "Running as double precision" << std::endl;
 
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<double,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
-
-      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r) ) );
+      params.dim = 2;
+      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params) );
     }
     else if ( fixed_dimension == 3 ) {
-
+      params.dim = 3;
     }
     else if ( fixed_dimension == 4 ) {
-
+      params.dim = 4;
     }
     else {
       Rcpp::stop( "Images must have dimension of 2,3,or 4" );
@@ -122,14 +144,14 @@ try
     if ( fixed_dimension == 2) {
       typedef itk::VectorImage<float,2> ImageType;
       typedef ImageType::Pointer ImagePointerType;
-
-      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r) ) );
+      params.dim = 2;
+      return Rcpp::wrap( greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params) );
     }
     else if ( fixed_dimension == 3 ) {
-
+      params.dim = 3;
     }
     else if ( fixed_dimension == 4 ) {
-
+      params.dim = 4;
     }
     else {
       Rcpp::stop( "Images must have dimension of 2,3,or 4" );

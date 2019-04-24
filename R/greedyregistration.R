@@ -12,7 +12,19 @@
 #' @export antsrext_test1()
 
 
-greedyregistration <- function( fixed, moving ) {
-  results = .Call("greedyregistration",fixed, moving)
+greedyregistration <- function( fixed, moving, metric="SSD" ) {
+
+  fixedImg = fixed
+  movingImg = moving
+
+  if ( !fixed@isVector) {
+    fixedImg = mergeChannels(list(fixed))
+  }
+
+  if ( !moving@isVector) {
+    movingImg = mergeChannels(list(moving))
+  }
+
+  results = .Call("greedyregistration", fixedImg, movingImg, metric, PACKAGE="greedyr")
   return(results)
 }

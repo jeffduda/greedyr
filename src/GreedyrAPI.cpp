@@ -67,10 +67,10 @@ GreedyrApproach<VDim, TReal>
   typename ImageCache::const_iterator itCache = this->m_ImageCache.find(ts.filename);
   if(itCache != this->m_ImageCache.end())
     {
-    CachedTransformType * cached = dynamic_cast<CachedTransformType *>(itCache->second);
+    CachedTransformType * cached = dynamic_cast<CachedTransformType *>(itCache->second.target);
     if(!cached)
       throw GreedyException("Cached transform %s is of the wrong type (%s, but should be %s)",
-                            ts.filename.c_str(), typeid(*itCache->second).name(),
+                            ts.filename.c_str(), typeid(*itCache->second.target).name(),
                             typeid(CachedTransformType).name());
 
     itk_tran = cached;
