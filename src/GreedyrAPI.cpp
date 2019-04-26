@@ -80,18 +80,6 @@ GreedyrApproach<VDim, TReal>
     throw GreedyException("Unable to find transform %s", ts.filename.c_str());
     }
 
-  /*
-  for (unsigned int i=0; i<VDim; i++ )
-    {
-    Qp(i,VDim) = itk_tran->GetOffset(i);
-    for (unsigned int j=0; j<VDim; j++ )
-      {
-      Qp(i,j) = itk_tran->GetMatrix()(i,j);
-      }
-    }
-
-  this->MapPhysicalRASSpaceToAffine(helper, level, Qp, itk_tran);
-  */
   typedef typename CachedTransformType::MatrixType MatrixType;
   typedef typename CachedTransformType::OffsetType OffsetType;
   MatrixType mat = itk_tran->GetMatrix();
@@ -101,12 +89,18 @@ GreedyrApproach<VDim, TReal>
     offset[0] *= -1;
     offset[1] *= -1;
   }
+  /*
   else if( VDim == 3 )
     {
+    std::cout << "3d correct" << std::endl;
+    offset[0] *= -1;
+    offset[1] *= -1;
+
     mat(2,0) *= -1; mat(2,1) *= -1;
     mat(0,2) *= -1; mat(1,2) *= -1;
-    mat(0,3) *= -1; mat(1,3) *= -1;
     }
+*/
+
   itk_tran->SetMatrix(mat);
   itk_tran->SetOffset(offset);
 

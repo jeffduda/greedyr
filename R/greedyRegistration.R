@@ -1,18 +1,12 @@
-#' antsrext_test1
-#'
-#' Test function that calls ANTsR routines
-#'
-#' @return int
-#' @author Duda JT
-#' @import ANTsR Rcpp
-#' @examples
-#' img = ANTsR::antsImageRead( ANTsR::getANTsRData( "r16" ) )
-#' img2 = ANTsR::antsImageRead( ANTsR::getANTsRData( "r30" ) )
-#' flag = greedyregistration(img, img2)
-#' @export antsrext_test1()
-
-
-greedyregistration <- function( fixed, moving, metric="SSD", mode="GREEDY" ) {
+#' @title greedyRegistration
+#' @description find transform between two image spaces
+#' @param fixed target image (or vector/list of images)
+#' @param moving moving image space (or vector/list of images)
+#' @param metric metric
+#' @param mode mode
+#' @param parameters list of parameters obtained from greedyParameters()
+#' @return antsrTransform
+greedyRegistration <- function( fixed, moving, metric="SSD", mode="GREEDY", parameters=NA ) {
 
   fixedImg = fixed
   movingImg = moving
@@ -32,7 +26,6 @@ greedyregistration <- function( fixed, moving, metric="SSD", mode="GREEDY" ) {
   if ( class(results)=="character" ) {
     results = antsrTransformFromDisplacementField( antsImageRead(results) )
   }
-
 
   return(results)
 }

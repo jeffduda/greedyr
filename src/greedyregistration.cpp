@@ -24,7 +24,7 @@ greedyregistration( typename ImageType::Pointer fixed, typename ImageType::Point
 
   TransformSpec transformSpec;
   CachedTransformPointerType affineTransform = CachedTransformType::New();
-  
+
   if ( params.mode == GreedyParameters::Mode::AFFINE ) {
 
     std::string affineName("AFFINE-0");
@@ -156,7 +156,11 @@ try
       return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
     }
     else if ( fixed_dimension == 3 ) {
+      typedef itk::VectorImage<double,3> ImageType;
+      typedef ImageType::Pointer ImagePointerType;
       params.dim = 3;
+      return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
+
     }
     else if ( fixed_dimension == 4 ) {
       params.dim = 4;
@@ -176,7 +180,10 @@ try
       return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
     }
     else if ( fixed_dimension == 3 ) {
+      typedef itk::VectorImage<float,3> ImageType;
+      typedef ImageType::Pointer ImagePointerType;
       params.dim = 3;
+      return greedyregistration<ImageType>(Rcpp::as<ImagePointerType>(fixed_r), Rcpp::as<ImagePointerType>(moving_r), params);
     }
     else if ( fixed_dimension == 4 ) {
       params.dim = 4;
